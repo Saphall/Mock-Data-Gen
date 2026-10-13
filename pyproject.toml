@@ -1,0 +1,23 @@
+[project]
+name = "mock-data-gen"
+version = "0.1.0"
+description = "Mock data generator with a Streamlit UI and an HTTP API"
+readme = "README.md"
+authors = [
+    { name = "Saphall", email = "safalsakha@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "faker>=40.43.0",
+    "fastapi>=0.143.0",
+    "pandas>=3.0.6",
+    "streamlit>=1.65.0",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[project.scripts]
+mock-data-gen = "mock_data_gen.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.13.0,<0.14.0"]
+build-backend = "uv_build"

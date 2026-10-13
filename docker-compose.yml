@@ -1,0 +1,17 @@
+services:
+  mock-data-gen:
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Inside the container the API must listen on all interfaces; publishing is limited to localhost below.
+      MOCK_DATA_API_HOST: 0.0.0.0
+      MOCK_DATA_OUTPUT_DIR: /data
+    ports:
+      # Bound to localhost only; drop the 127.0.0.1 prefix to expose them on the network.
+      - "127.0.0.1:${UI_PORT:-8501}:8501"
+      - "127.0.0.1:${MOCK_DATA_API_PORT:-8000}:${MOCK_DATA_API_PORT:-8000}"
+    volumes:
+      - ./output:/data
+    restart: unless-stopped
