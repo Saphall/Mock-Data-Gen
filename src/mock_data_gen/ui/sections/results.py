@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 import streamlit as st
 
-from ...config import API_PUBLIC_URL
+from ...config import API_ENABLED, API_PUBLIC_URL
 from ...core import FORMATS, STORE, Dataset, serialize
 from ..components import card_header, stop_stream
 
@@ -38,6 +38,10 @@ def export_view(dataset: Dataset) -> None:
 
 
 def api_view(dataset: Dataset, api_ok: bool) -> None:
+    if not API_ENABLED:
+        st.info("The HTTP API is not available on this host (only the web UI is exposed). Use the Export tab, "
+                "or run the Docker setup to serve datasets to other services.")
+        return
     base = API_PUBLIC_URL
     name = dataset.name
     if not api_ok:
@@ -52,13 +56,22 @@ def api_view(dataset: Dataset, api_ok: bool) -> None:
         f'# control the dataset\n'
         f'curl -X POST "{base}/datasets/{name}/generate?rows=5000"\n'
         f'curl -X POST "{base}/datasets/{name}/stream/start"\n'
-        f'curl -X POST "{base}/datasets/{name}/stream/stop"',
+        f'curl -X POST "{base}/datasets/{name}/stream/stop"\n\n'
+        f'# live feed while streaming: one JSON row per line, closes when the stream stops\n'
+        f'curl -N "{base}/datasets/{name}/stream"\n'
+        f'# or as server-sent events, replaying the buffer first\n'
+        f'curl -N "{base}/datasets/{name}/stream?format=sse&start=beginning"',
         language="bash",
     )
     st.code(
-        'import requests\n\n'
+        'import json\nimport requests\n\n'
         f'resp = requests.get("{base}/datasets/{name}/rows", params={{"limit": 100}}).json()\n'
-        'rows, cursor = resp["data"], resp["cursor"]',
+        'rows, cursor = resp["data"], resp["cursor"]\n\n'
+        '# consume the live feed, e.g. from an ETL job\n'
+        f'with requests.get("{base}/datasets/{name}/stream", stream=True) as live:\n'
+        '    for line in live.iter_lines():\n'
+        '        if line:\n'
+        '            row = json.loads(line)',
         language="python",
     )
 

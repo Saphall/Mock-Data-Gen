@@ -1,6 +1,6 @@
 import streamlit as st
 
-from ...config import API_PUBLIC_URL
+from ...config import API_ENABLED, API_PUBLIC_URL
 from ...core import FIELD_TYPES, FORMATS
 from ...templates import TEMPLATES
 
@@ -8,7 +8,10 @@ STEPS = ("Schema", "Configure", "Preview &amp; Export")
 
 
 def topbar(api_ok: bool, api_msg: str) -> None:
-    status = (f'<span class="pill ok">API live &middot; <b>{API_PUBLIC_URL}</b></span>' if api_ok
+    if not API_ENABLED:
+        status = '<span class="pill">API disabled on this host</span>'
+    else:
+        status = (f'<span class="pill ok">API live &middot; <b>{API_PUBLIC_URL}</b></span>' if api_ok
               else f'<span class="pill bad">API offline &middot; {api_msg}</span>')
     step_html = '<span class="line"></span>'.join(f'<span class="step"><i>{n}</i>{name}</span>'
                                                   for n, name in enumerate(STEPS, 1))

@@ -84,6 +84,8 @@ def render() -> None:
                 "| POST | `/datasets` | Create a dataset from a spec |\n"
                 "| POST | `/datasets/{name}/generate?rows=` | Regenerate a dataset |\n"
                 "| POST | `/datasets/{name}/stream/start` or `/stop` | Control streaming |\n"
+                "| GET | `/datasets/{name}/stream?format=&start=&after=&wait=` | Live feed: pushes rows as they are generated "
+                "(`ndjson` or `sse`) and closes when the stream stops; `start=beginning` replays the buffer first |\n"
                 "| DELETE | `/datasets/{name}` | Remove a dataset |"
             )
 

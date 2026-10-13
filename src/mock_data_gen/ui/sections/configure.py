@@ -1,5 +1,6 @@
 import streamlit as st
 
+from ...config import API_ENABLED
 from ...core import FORMATS, MAX_ROWS_ONCE, STORE, Dataset, validate_schema
 from ..components import card_header
 from ..state import current_spec
@@ -52,8 +53,11 @@ def render() -> None:
 
         save = None
         with c3:
-            st.checkbox("Expose through API", value=True, disabled=True,
-                        help="Every dataset is readable over HTTP while the app is running.")
+            if API_ENABLED:
+                st.checkbox("Expose through API", value=True, disabled=True,
+                            help="Every dataset is readable over HTTP while the app is running.")
+            else:
+                st.caption("HTTP API unavailable on this host; use the Export tab.")
             if st.checkbox("Also save to a file", key="save_file"):
                 formats = ["csv", "jsonl", "sql"] if streaming else list(FORMATS)
                 if s.get("save_format") not in formats:

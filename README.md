@@ -11,23 +11,31 @@ uv run mock-data-gen api      # API only
 
 ### Docker
 
+1. With `docker compose`:
+
 ```bash
 docker compose up --build     # UI on :8501, API on :8000, saved files in ./output
 ```
 
-Ports are published on `127.0.0.1` only; edit [docker-compose.yml](docker-compose.yml) to expose them on the network.
-Without compose: `docker build -t mock-data-gen . && docker run -p 8501:8501 -p 8000:8000 -v "$PWD/output:/data" mock-data-gen`.
+2. With `docker`:
+
+```bash
+docker build -t mock-data-gen .
+docker run -p 8501:8501 -p 8000:8000 -v "$PWD/output:/data" mock-data-gen
+```
 
 ### Settings (environment variables)
 
-Copy [.env.example](.env.example) to `.env`. Docker Compose reads it automatically; locally use `uv run --env-file .env mock-data-gen`.
+Copy [.env.example](.env.example) to `.env`. Docker Compose reads it automatically; 
+Or locally use `uv run --env-file .env mock-data-gen`.
 
-| Variable                   | Default                           | Purpose                        |
-| -------------------------- | --------------------------------- | ------------------------------ |
-| `MOCK_DATA_API_HOST`       | `127.0.0.1` (`0.0.0.0` in Docker) | API bind address               |
-| `MOCK_DATA_API_PORT`       | `8000`                            | API port                       |
-| `MOCK_DATA_API_PUBLIC_URL` | `http://localhost:<port>`         | URL shown in the UI            |
-| `MOCK_DATA_OUTPUT_DIR`     | `output` (`/data` in Docker)      | Default folder for saved files |
+| Variable                   | Default                             | Purpose                                  |
+| -------------------------- | ----------------------------------- | ---------------------------------------- |
+| `MOCK_DATA_API_HOST`       | `127.0.0.1` (`0.0.0.0` in Docker)   | API bind address                         |
+| `MOCK_DATA_API_PORT`       | `8000`                              | API port                                 |
+| `MOCK_DATA_API_PUBLIC_URL` | `http://localhost:<port>`           | URL shown in the UI                      |
+| `MOCK_DATA_OUTPUT_DIR`     | `output` (`/data` in Docker)        | Default folder for saved files           |
+| `MOCK_DATA_API_ENABLED`    | `true` (`false` on Streamlit Cloud) | Start the HTTP API and show it in the UI |
 
 ## Usage
 
@@ -40,6 +48,27 @@ curl "http://localhost:8000/datasets/security_logs/rows?limit=10"
 curl "http://localhost:8000/datasets/security_logs/rows?after=<cursor>"   # only newer rows
 curl "http://localhost:8000/datasets/security_logs/rows?format=csv"
 ```
+
+### Use in streaming projects
+To feed another project (for example an ETL job) in real time, keep a connection open while a stream runs.
+Rows are pushed as they are generated and the connection closes when the stream stops:
+
+```bash
+curl -N "http://localhost:8000/datasets/security_logs/stream"                          # NDJSON, new rows only
+curl -N "http://localhost:8000/datasets/security_logs/stream?format=sse&start=beginning"  # SSE, replay the buffer first
+```
+
+```python
+import json, requests
+
+with requests.get("http://localhost:8000/datasets/security_logs/stream", stream=True) as live:
+    for line in live.iter_lines():
+        if line:
+            row = json.loads(line)  # hand off to your pipeline
+```
+
+Options: `after=<cursor>` or the SSE `Last-Event-ID` header resume where you left off, and `wait=<seconds>` keeps the
+connection open for that long if the stream has not started yet.
 
 Column options: `integer` `1,100` | `float` `0,1,3` | `choice` `a:70|b:30` | `datetime` `-7d,now` | `sequence` `1,1`. See the Docs page for all types.
 

@@ -4,6 +4,7 @@ import threading
 import time
 from collections import deque
 from datetime import datetime, timezone
+from itertools import islice
 from pathlib import Path
 
 from ..config import OUTPUT_DIR
@@ -112,6 +113,19 @@ class Dataset:
             offset = max(after - first_seq, 0)
         rows = data[offset: offset + max(limit, 0)]
         return rows, first_seq + offset + len(rows)
+
+    def tail(self, cursor: int, limit: int = 500) -> tuple[list[dict], int]:
+        """Rows generated after `cursor` (a total-rows count), oldest first, plus the new cursor.
+
+        Cheap enough to poll at the buffer's tail; rows already evicted from the buffer are skipped.
+        """
+        with self._lock:
+            total = self.total
+            if cursor > total:  # the dataset was regenerated, so start over
+                cursor = 0
+            fresh = list(islice(reversed(self._rows), min(total - cursor, len(self._rows))))[::-1]
+        batch = fresh[:limit]
+        return batch, total - len(fresh) + len(batch)
 
     def all_rows(self) -> list[dict]:
         with self._lock:

@@ -5,7 +5,7 @@ from pathlib import Path
 import streamlit as st
 
 from mock_data_gen.api import start_api
-from mock_data_gen.config import API_HOST, API_PORT
+from mock_data_gen.config import API_ENABLED, API_HOST, API_PORT
 from mock_data_gen.ui import nav, state
 from mock_data_gen.ui.components import streams_banner
 from mock_data_gen.ui.theme import build_css, current_mode, toggle_mode
@@ -25,7 +25,7 @@ def main() -> None:
                   key="theme_btn", on_click=toggle_mode, help="Switch between dark and light theme")
     state.init_state()
     state.keep_widget_state()
-    st.session_state.api_status = start_api(API_HOST, API_PORT)
+    st.session_state.api_status = start_api(API_HOST, API_PORT) if API_ENABLED else (False, "disabled")
     page = st.navigation([nav.HOME_PAGE, nav.TEMPLATES_PAGE, nav.DOCS_PAGE], position="top")
     streams_banner()
     page.run()
