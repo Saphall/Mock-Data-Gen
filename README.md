@@ -23,7 +23,6 @@ uv sync
 ```bash            
 uv run mock-data-gen          # Streamlit UI (http://localhost:8501) + API (http://localhost:8000)
 ```
-OR 
 
 ```bash
 uv run mock-data-gen api      # API only
