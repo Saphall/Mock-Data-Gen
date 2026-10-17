@@ -3,9 +3,29 @@ Generate mock data locally, then read it over an HTTP API or save it to files.
 
 ## Run
 
+> Prerequisite: [uv](https://docs.astral.sh/uv/getting-started/installation/)
+
+1. Create and activate `venv`
+
 ```bash
-uv sync                       # Prerequisite (https://docs.astral.sh/uv/getting-started/installation/)
+uv venv
+source .venv/bin/activate 
+```
+
+2. Install dependencies
+
+```bash
+uv sync
+```
+
+3. Run the app
+
+```bash            
 uv run mock-data-gen          # Streamlit UI (http://localhost:8501) + API (http://localhost:8000)
+```
+OR 
+
+```bash
 uv run mock-data-gen api      # API only
 ```
 
@@ -88,21 +108,21 @@ src/mock_data_gen/
 
 ## Pages
 
-### Builder
+> ### Builder
 
-Define fields, configure generation and preview, export or serve the data.
+* Define fields, configure generation and preview, export or serve the data.
 
 ![Builder page](docs/screenshots/builder.png)
 
-### Templates
+> ### Templates
 
-38 ready-made datasets with search and category filters.
+* 38 ready-made datasets with search and category filters.
 
 ![Template gallery](docs/screenshots/templates.png)
 
-### Docs
+> ### Docs
 
-Every column type with its options and an example value, plus options syntax and the HTTP API.
+* Every column type with its options and an example value, plus options syntax and the HTTP API.
 
 ![Column types reference](docs/screenshots/column-types.png)
 
